@@ -20,7 +20,8 @@ jobs:
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 5.0.101
+        dotnet-version: '6.0.x'
+        include-prerelease: true
     - name: Add Nuget
       run: |
         cd src
@@ -37,23 +38,22 @@ jobs:
         dotnet test --logger "junit;LogFileName=Report.xml"
         sleep 2s
         dotnet test /p:AltCover=true /p:AltCoverReport="altcover.xml" /p:AltCoverAssemblyExcludeFilter='(xunit.*)|(System.*)|(.*Tests)'
-    - name: ReportGenerator
-      uses: danielpalme/ReportGenerator-GitHub-Action@4.8.4
+    - name: "Repository Meta"
+      uses: varunsridharan/action-repository-meta@main
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}        
+    - name: Build
+      run: |
+        cd src	
+        dotnet publish -o ../docs --configuration Release
+        sed -i 's%<base href="/"%<base href="/${{env.REPOSITORY_SLUG}}/"%g' ../docs/wwwroot/index.html
+        touch ../docs/wwwroot/.nojekyll
+    - name: Deploy to Github Pages
+      uses: JamesIves/github-pages-deploy-action@releases/v3
       with:
-        reports: '**/altcover.xml'
-        targetdir: 'docs' # REQUIRED # The directory where the generated report should be saved.
-        sourcedirs: 'src' 
-    - name: Push Report
-      uses: EndBug/add-and-commit@v4
-      with:
-        add: 'docs/*'
-        message: "Coverage Report  ${{github.sha}}"
-        ref: 'gh-pages' 
-        remove: ''  
+        ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+        BASE_BRANCH: master
+        BRANCH: gh-pages
+        FOLDER: docs/wwwroot
+        SINGLE_COMMIT: true
       if: ${{ github.ref == 'refs/heads/master' }}
-    - name: Publish Unit Test Results
-      uses: docker://ghcr.io/enricomi/publish-unit-test-result-action:v1
-      if: ${{ github.ref == 'refs/heads/master' && always() }}
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        files: src/**/Report.xml
