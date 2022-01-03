@@ -1,6 +1,7 @@
 using BlazorApp1.Actors.Counter;
 using Microsoft.AspNetCore.Components;
 using Proto;
+using Boost.Proto.Actor.DependencyInjection;
 
 namespace BlazorApp1;
 
@@ -9,10 +10,12 @@ public partial class ActorService
     [Inject]
     private RootContext RootContext { get; set; }
 
+    [Inject]
+    private IPropsFactory<CounterActor> CounterActorFactory { get; set; }
+
     protected override Task OnInitializedAsync()
     {
-        var props = Props.FromProducer(() => new CounterActor());
-        var pid = RootContext.SpawnNamed(props, "CounterActor");
+        RootContext.SpawnNamed(CounterActorFactory.Create(), "CounterActor");
 
         return base.OnInitializedAsync();
     }
