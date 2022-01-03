@@ -1,3 +1,3 @@
-﻿namespace BlazorApp1.Actors.Counter;
+namespace BlazorApp1.Actors.Counter;
 
-record CounterState(int Count);
+public record CounterState(int Count);
