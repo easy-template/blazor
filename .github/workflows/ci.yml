@@ -9,7 +9,7 @@ on:
 jobs:
   Build-and-Tests:
     name: Build and Test
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
     - name: running infrastructure
@@ -49,11 +49,9 @@ jobs:
         sed -i 's%<base href="/"%<base href="/${{env.REPOSITORY_SLUG}}/"%g' ../docs/wwwroot/index.html
         touch ../docs/wwwroot/.nojekyll
     - name: Deploy to Github Pages
-      uses: JamesIves/github-pages-deploy-action@releases/v3
+      uses: JamesIves/github-pages-deploy-action@v4
       with:
-        ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-        BASE_BRANCH: master
-        BRANCH: gh-pages
-        FOLDER: docs/wwwroot
-        SINGLE_COMMIT: true
+        branch: gh-pages
+        folder: docs/wwwroot
+        single-commit: true
       if: ${{ github.ref == 'refs/heads/master' }}
